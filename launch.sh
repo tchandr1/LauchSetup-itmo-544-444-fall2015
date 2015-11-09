@@ -48,7 +48,7 @@ aws elb configure-health-check --load-balancer-name itmo544tchandr1-lb --health-
 
 echo "Create Launch Configuration"
 
-aws autoscaling create-launch-configuration --launch-configuration-name itmo544tchandr1-launch-config --image-id ami-5189a661 --key-name itmo544-444-fall2015-surface-laptop --security-groups sg-3456df50 --instance-type t2.micro --user-data file://EnvironmentalSetup-itmo-544-444-fall2015/install-webserver.sh
+aws autoscaling create-launch-configuration --launch-configuration-name itmo544tchandr1-launch-config --image-id ami-5189a661 --key-name itmo544-444-fall2015-surface-laptop --security-groups sg-3456df50 --instance-type t2.micro --user-data file://EnvironmentalSetup-itmo-544-444-fall2015/install-webserver.sh --iam-instance-profile "phpdeveloperRole"
 
 echo "Create AutoScaling Configuration"
 
