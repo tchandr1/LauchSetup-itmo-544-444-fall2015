@@ -10,7 +10,8 @@ echo "Test shell script"
 #declare an array in bash
 declare -a instanceARR
 
-mapfile -t instanceARR < <(aws ec2 run-instances --image-id ami-5189a661 --count $1 --instance-type t2.micro --key-name itmo544-444-fall2015-surface-laptop --security-group-ids sg-3456df50 --subnet-id subnet-7afc890d --associate-public-ip-address --iam-instance-profile Name=phpdeveloperRole --user-data file://EnvironmentalSetup-itmo-544-444-fall2015/install-webserver.sh --output table | grep InstanceId | sed "s/|//g" | sed "s/ //g" | sed "s/InstanceId//g")
+mapfile -t instanceARR < <(aws ec2 run-instances --image-id $1 --count $2 --instance-type $3 --key-name $6 --security-group-ids $4 --subnet-id $5 --associate-public-ip-address --iam-instance-profile $7 --user-data file://EnvironmentalSetup-itmo-544-444-fall2015/install-webserver.sh --output table | grep InstanceId | sed "s/|//g" | sed "s/ //g" | sed "s/InstanceId//g")
+
 
 echo "\n"
 echo ${instanceARR[@]}
