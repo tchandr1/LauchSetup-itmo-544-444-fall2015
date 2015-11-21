@@ -12,7 +12,6 @@ declare -a instanceARR
 
 mapfile -t instanceARR < <(aws ec2 run-instances --image-id $1 --count $2 --instance-type $3 --key-name $6 --security-group-ids $4 --subnet-id $5 --associate-public-ip-address --iam-instance-profile $7 --user-data file://EnvironmentalSetup-itmo-544-444-fall2015/install-webserver.sh --output table | grep InstanceId | sed "s/|//g" | sed "s/ //g" | sed "s/InstanceId//g")
 
-
 echo "\n"
 echo ${instanceARR[@]}
 echo "\n"
@@ -55,14 +54,33 @@ echo "Create AutoScaling Configuration"
 
 aws autoscaling create-auto-scaling-group --auto-scaling-group-name itmo-544-tchandra-extended-auto-scaling-group-2 --launch-configuration-name itmo544tchandr1-launch-config --load-balancer-names itmo544tchandr1-lb --health-check-type ELB --min-size 3 --max-size 6 --desired-capacity 3 --default-cooldown 600 --health-check-grace-period 120 --vpc-zone-identifier subnet-7afc890d
 
+echo "Create SNS topic"
+
+ARN=(`aws sns create-topic --name mp2`)
+
+echo "This is the ARN :$ARN"
+
+echo "Set topic attributes"
+
+aws sns set-topic-attributes --topic-arn $ARN --attribute-name DisplayName --attribute-value mp2
+
+echo "Subscribe to topic"
+aws sns subscribe --topic-arn $ARN --protocol email --notification-endpoint tchandr1@hawk.iit.edu
+
+echo "wait for the subscriber to validate"
+
+sleep 60
+
+echo "Publish message"
+aws sns publish --topic-arn "arn:aws:sns:us-west-2:537433306085:mp2" --message "Cloudwatchmetrics are triggerd"
+
 
 echo "Cloud metrics when CPU exceeds 30 percent"
 
-aws cloudwatch put-metric-alarm --alarm-name itmo544-tchandr1-CPU30 --alarm-description "Alarm when CPU exceeds 30 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --threshold 30 --comparison-operator GreaterThanOrEqualToThreshold  --dimensions Name=AutoScalingGroupName,Value=itmo-544-tchandra-extended-auto-scaling-group-2 --evaluation-periods 2 --alarm-actions arn:aws:sns:us-west-2:111122223333:MyTopic --unit Percent
+aws cloudwatch put-metric-alarm --alarm-name itmo544-tchandr1-CPU30 --alarm-description "Alarm when CPU exceeds 30 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --threshold 30 --comparison-operator GreaterThanOrEqualToThreshold  --dimensions Name=AutoScalingGroupName,Value=itmo-544-tchandra-extended-auto-scaling-group-2 --evaluation-periods 2 --alarm-actions $ARN --unit Percent
 
 
 echo "Cloud metrics When CPU scales down to 10"
 
-aws cloudwatch put-metric-alarm --alarm-name itmo545-tchandr1-CPU10 --alarm-description "Alarm when CPU lessens 10 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --threshold 10 --comparison-operator LessThanOrEqualToThreshold  --dimensions Name=AutoScalingGroupName,Value=itmo-544-tchandra-extended-auto-scaling-group-2 --evaluation-periods 2 --alarm-actions arn:aws:sns:us-west-2:111122223333:MyTopic --unit Percent
+aws cloudwatch put-metric-alarm --alarm-name itmo545-tchandr1-CPU10 --alarm-description "Alarm when CPU lessens 10 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 300 --threshold 10 --comparison-operator LessThanOrEqualToThreshold  --dimensions Name=AutoScalingGroupName,Value=itmo-544-tchandra-extended-auto-scaling-group-2 --evaluation-periods 2 --alarm-actions $ARN --unit Percent
 
-~                                                             
