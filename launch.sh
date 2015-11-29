@@ -38,6 +38,9 @@ echo -e "\nFinished launching ELB and sleeping 25 seconds"
 for i in {0..25}; do echo -ne '.';sleep 1;done
 echo "\n"
 
+echo "\n Adding ELB session stickiness policy";
+aws elb create-lb-cookie-stickiness-policy --load-balancer-name itmo544tchandr1-lb --policy-name itmo544tchandr1-lb-policy
+
 echo "\nRegistering instances with load balancer"
 
 aws elb register-instances-with-load-balancer --load-balancer-name itmo544tchandr1-lb --instances ${instanceARR[@]}
